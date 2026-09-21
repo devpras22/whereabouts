@@ -98,11 +98,12 @@ function PersonCard({ card, tick, onOpen, viewerTz }: { card: BoardCard; tick: n
   );
 }
 
-function CalendarPop({ pick, close }: { pick: (isoDate: string) => void; close: () => void }) {
+function CalendarPop({ pick, close, rangeFrom }: { pick: (isoDate: string) => void; close: () => void; rangeFrom?: string | null }) {
   const [month, setMonth] = useState(() => {
     const d = new Date();
     return { y: d.getFullYear(), m: d.getMonth() };
   });
+  const [hover, setHover] = useState<string | null>(null);
   const first = new Date(month.y, month.m, 1);
   const startDow = (first.getDay() + 6) % 7; // Monday-first
   const days = new Date(month.y, month.m + 1, 0).getDate();
@@ -126,20 +127,36 @@ function CalendarPop({ pick, close }: { pick: (isoDate: string) => void; close: 
           {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
             <span key={i} className="cal-dow">{d}</span>
           ))}
+          <span
+            className="cal-grid"
+            onMouseLeave={() => setHover(null)}
+            style={{ display: "contents" }}
+          >
           {cells.map((d, i) => {
             if (d === null) return <span key={`e${i}`} />;
             const is = `${month.y}-${String(month.m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const lo = rangeFrom && hover ? (rangeFrom < hover ? rangeFrom : hover) : rangeFrom;
+            const hi = rangeFrom && hover ? (rangeFrom < hover ? hover : rangeFrom) : null;
+            const cls = [
+              "cal-day",
+              is === todayIso ? "today" : "",
+              is === rangeFrom ? "sel" : "",
+              is === hi ? "end-preview" : "",
+              lo && hi && is > lo && is < hi ? "in-range" : "",
+            ].filter(Boolean).join(" ");
             return (
               <button
                 key={is}
-                className={`cal-day ${is === todayIso ? "today" : ""}`}
+                className={cls}
                 disabled={is < todayIso}
                 onClick={() => pick(is)}
+                onMouseEnter={() => setHover(is)}
               >
                 {d}
               </button>
             );
           })}
+          </span>
         </div>
       </div>
     </>
@@ -391,6 +408,7 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
               )}
               <CalendarPop
                 pick={pickRange}
+                rangeFrom={rangeFrom}
                 close={() => { setCalOpen(false); setRangeFrom(null); }}
               />
             </>

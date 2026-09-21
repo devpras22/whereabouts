@@ -560,3 +560,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
   margin-top: 2px;
 }
 .card-date.diff { color: var(--warning); }
+
+/* flight-style range selection in the calendar */
+.cal-day.sel { background: var(--text-display); color: var(--black); }
+.cal-day.in-range { background: rgba(74, 158, 92, 0.22); }
+.cal-day.end-preview { outline: 1.5px dashed var(--success); outline-offset: -1.5px; }
