@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth (password)
 - **AI models:** gpt-4o-mini
 - **Started:** 2026-09-21T15:41:03Z
-- **Last updated:** 2026-09-21T16:45:00Z
+- **Last updated:** 2026-09-21T18:00:00Z
 
 ## Log
 
@@ -98,3 +98,13 @@ black and the hour strip had no axis. Added hour labels (00–21) under the
 strip, brightened shift cells, promoted the best-call-window line to display
 contrast, and showed both people's shifts above the chart
 (`src/pages/Board.tsx`, `src/index.css`).
+
+### 2026-09-22 - 54a70f0
+Shipped the full sponsor stack and the polish pass: Firecrawl now scrapes a
+region's public-holidays page on demand and the banner updates live
+(`convex/holidays.ts`, rate-limited action); team management (rename, remove
+teammate); profile editing with avatar upload plus preset faces; a custom
+calendar replaces the native date picker and the away-date bug is gone;
+Atlas view (dot-matrix world map with real day/night terminator) and a 24-hour
+ribbon view, swipeable; viewer card gets a green ring; OG image and mobile
+styles. Fixed a TopoJSON delta-decoding bug that had garbled the map.
