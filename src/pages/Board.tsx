@@ -53,8 +53,9 @@ function StatusTag({ card }: { card: BoardCard }) {
   );
 }
 
-function PersonCard({ card, tick, onOpen }: { card: BoardCard; tick: number; onOpen: () => void }) {
+function PersonCard({ card, tick, onOpen, viewerTz }: { card: BoardCard; tick: number; onOpen: () => void; viewerTz?: string }) {
   const t = localTime(card.tz, tick);
+  const myDate = localTime(viewerTz ?? card.tz, tick).date;
   const quiet = isOffShift(card.workStart, card.workEnd, t.h);
   const nightShift = card.workStart >= 18 || card.workStart < 7;
 
@@ -77,6 +78,7 @@ function PersonCard({ card, tick, onOpen }: { card: BoardCard; tick: number; onO
       <div className="card-time">
         <span className="clock">{t.label}</span>
         <StatusTag card={card} />
+        <span className={`card-date${t.date !== myDate ? " diff" : ""}`}>{t.date}</span>
       </div>
       {card.holidayToday ? (
         <div className="planned"><span className="dot dot-neutral" />{card.holidayToday.name}</div>
@@ -700,7 +702,7 @@ export default function Board({ onHome, onSignOut }: { onHome: () => void; onSig
         <section className="viewpane">
           <div className="grid">
             {sorted.map((c) => (
-              <PersonCard key={c._id} card={c} tick={tick} onOpen={() => setOpen(c._id)} />
+              <PersonCard key={c._id} card={c} tick={tick} viewerTz={viewer?.tz} onOpen={() => setOpen(c._id)} />
             ))}
           </div>
         </section>

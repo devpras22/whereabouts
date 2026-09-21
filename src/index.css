@@ -551,3 +551,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
   font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
   color: var(--success);
 }
+
+/* date under the clock: quiet when it's the same day as yours, amber when it isn't */
+.card-time { position: relative; }
+.card-date {
+  display: block; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-disabled);
+  margin-top: 2px;
+}
+.card-date.diff { color: var(--warning); }

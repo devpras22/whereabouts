@@ -55,7 +55,7 @@ export function coversToday(s: Status): boolean {
 
 // Live local time in a person's timezone. `tick` (ms epoch) is passed in so
 // React re-renders drive the refresh.
-export function localTime(tz: string, tick: number): { h: number; m: number; label: string } {
+export function localTime(tz: string, tick: number): { h: number; m: number; label: string; date: string } {
   const d = new Date(tick);
   const fmt = new Intl.DateTimeFormat("en-GB", {
     timeZone: tz,
@@ -65,7 +65,13 @@ export function localTime(tz: string, tick: number): { h: number; m: number; lab
   });
   const parts = fmt.format(d); // "HH:MM"
   const [h, m] = parts.split(":").map((x) => parseInt(x, 10));
-  return { h, m, label: parts };
+  const date = new Intl.DateTimeFormat("en-GB", {
+    timeZone: tz,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(d); // "Mon 21 Sept"
+  return { h, m, label: parts, date };
 }
 
 export function localHour(tz: string, tick: number): number {
