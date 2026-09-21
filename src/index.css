@@ -16,7 +16,7 @@
   --font-mono: "Space Mono", "SF Mono", monospace;
   --font-display: "Doto", "Space Mono", monospace;
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --hcell-mine: #2E2E2E;
+  --hcell-mine: #4E4E4E;
   color-scheme: dark;
 }
 
@@ -278,20 +278,33 @@ input[type="date"] { color-scheme: dark; }
   border: 1px solid var(--border); border-radius: 8px;
   padding: 12px 4px 10px; text-align: center;
 }
-.daycell .daylabel { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
+.daycell .daylabel { display: block; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
 .daycell .daydot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .daycell.cell-around .daydot { background: var(--success); }
 .daycell.cell-off .daydot { background: var(--warning); }
 .daycell.cell-holiday { border-color: var(--border-visible); }
 .daycell.cell-holiday .daydot { background: var(--text-display); }
-.overlap-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
-.overlap-head strong { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-display); }
-.overlap-head .callwin { font-family: var(--font-mono); font-size: 14px; color: var(--text-primary); }
+.overlap-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
+.overlap-head strong { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-display); }
+.overlap-head .callwin { font-family: var(--font-mono); font-size: 16px; color: var(--text-display); }
+.overlap-head .callwin.none { color: var(--warning); }
+.shift-readout {
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px;
+}
 .hours { display: flex; gap: 3px; }
-.hcell { flex: 1; height: 22px; border-radius: 2px; background: var(--surface-raised); }
+.hcell { flex: 1; height: 28px; border-radius: 2px; background: var(--surface-raised); }
 .hcell.mine { background: var(--hcell-mine); }
 .hcell.both { background: var(--text-display); }
-.legend { margin-top: 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.hours-axis { display: flex; margin-top: 6px; }
+.haxis {
+  flex: 1; text-align: left; font-family: var(--font-mono);
+  font-size: 12px; letter-spacing: 0.04em; color: var(--text-secondary);
+}
+.legend { margin-top: 12px; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; display: flex; gap: 18px; align-items: center; }
+.legend .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 2px; margin-right: 7px; vertical-align: -2px; }
+.legend .swatch.mine { background: var(--hcell-mine); }
+.legend .swatch.both { background: var(--text-display); }
 .modal > .meta { display: block; margin-top: 24px; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.9; }
 
 /* ---------- light mode ---------- */

@@ -281,14 +281,30 @@ function WeekModal({ card, viewer, board, onClose }: { card: BoardCard; viewer: 
         <div className="overlap">
           <div className="overlap-head">
             <strong>Working-hours overlap</strong>
-            <span className="callwin">best call window: {overlap.label}</span>
+            <span className={`callwin ${overlap.cells.some((c) => c.both) ? "" : "none"}`}>
+              best call window: {overlap.label}
+            </span>
+          </div>
+          <div className="shift-readout">
+            you {String(viewer.workStart).padStart(2, "0")}–{String(viewer.workEnd).padStart(2, "0")}
+            {" · "}
+            {card.name.split(" ")[0]} {String(card.workStart).padStart(2, "0")}–{String(card.workEnd).padStart(2, "0")}
+            {" · "}times below are yours
           </div>
           <div className="hours">
             {overlap.cells.map((c, i) => (
               <span key={i} className={`hcell ${inShift(viewer.workStart, viewer.workEnd, c.viewerH) ? "mine" : ""} ${c.both ? "both" : ""}`} title={`you ${c.viewerH}:00 · them ${c.theirH}:00`} />
             ))}
           </div>
-          <div className="legend meta">grey: your shift · white: shared working hours</div>
+          <div className="hours-axis">
+            {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+              <span key={h} className="haxis">{String(h).padStart(2, "0")}</span>
+            ))}
+          </div>
+          <div className="legend meta">
+            <span className="swatch mine" /> your shift
+            <span className="swatch both" /> shared — good to ping
+          </div>
         </div>
         {card.upcomingHolidays.length ? (
           <div className="meta">Upcoming where they are: {card.upcomingHolidays.map((h) => `${h.name} (${fmtDate(h.date)})`).join(" · ")}</div>
