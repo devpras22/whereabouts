@@ -7,40 +7,43 @@ const H = 760;
 const LAT_TOP = 78; // inhabited-world crop: no empty polar bands
 const LAT_BOTTOM = -56;
 
+// All entries are [lng, lat] — the same order coordsFor returns and the
+// draw loop consumes. (They were [lat, lng] once; every demo pin rendered
+// transposed, a continent away. Never again without the numeric check.)
 const CITY_COORDS: Record<string, [number, number]> = {
-  pune: [18.52, 73.86],
-  bhopal: [23.26, 77.41],
-  bengaluru: [12.97, 77.59],
-  austin: [30.27, -97.74],
-  london: [51.51, -0.13],
-  berlin: [52.52, 13.4],
-  manila: [14.6, 120.98],
-  "são paulo": [-23.55, -46.63],
-  "sao paulo": [-23.55, -46.63],
-  lisbon: [38.72, -9.14],
-  dubai: [25.2, 55.27],
-  singapore: [1.35, 103.82],
-  sydney: [-33.87, 151.21],
-  "new york": [40.71, -74.01],
-  chicago: [41.88, -87.63],
-  denver: [39.74, -104.99],
-  "los angeles": [34.05, -118.24],
+  pune: [73.86, 18.52],
+  bhopal: [77.41, 23.26],
+  bengaluru: [77.59, 12.97],
+  austin: [-97.74, 30.27],
+  london: [-0.13, 51.51],
+  berlin: [13.4, 52.52],
+  manila: [120.98, 14.6],
+  "são paulo": [-46.63, -23.55],
+  "sao paulo": [-46.63, -23.55],
+  lisbon: [-9.14, 38.72],
+  dubai: [55.27, 25.2],
+  singapore: [103.82, 1.35],
+  sydney: [151.21, -33.87],
+  "new york": [-74.01, 40.71],
+  chicago: [-87.63, 41.88],
+  denver: [-104.99, 39.74],
+  "los angeles": [-118.24, 34.05],
 };
 
 const TZ_COORDS: Record<string, [number, number]> = {
-  "Asia/Kolkata": [22, 79],
-  "Asia/Manila": [14.6, 120.98],
-  "Asia/Singapore": [1.35, 103.82],
-  "Asia/Dubai": [25.2, 55.27],
-  "Europe/London": [51.51, -0.13],
-  "Europe/Berlin": [52.52, 13.4],
-  "Europe/Lisbon": [38.72, -9.14],
-  "America/New_York": [40.71, -74.01],
-  "America/Chicago": [41.88, -87.63],
-  "America/Denver": [39.74, -104.99],
-  "America/Los_Angeles": [34.05, -118.24],
-  "America/Sao_Paulo": [-23.55, -46.63],
-  "Australia/Sydney": [-33.87, 151.21],
+  "Asia/Kolkata": [79, 22],
+  "Asia/Manila": [120.98, 14.6],
+  "Asia/Singapore": [103.82, 1.35],
+  "Asia/Dubai": [55.27, 25.2],
+  "Europe/London": [-0.13, 51.51],
+  "Europe/Berlin": [13.4, 52.52],
+  "Europe/Lisbon": [-9.14, 38.72],
+  "America/New_York": [-74.01, 40.71],
+  "America/Chicago": [-87.63, 41.88],
+  "America/Denver": [-104.99, 39.74],
+  "America/Los_Angeles": [-118.24, 34.05],
+  "America/Sao_Paulo": [-46.63, -23.55],
+  "Australia/Sydney": [151.21, -33.87],
 };
 
 function coordsFor(card: MapCard): [number, number] | null {
