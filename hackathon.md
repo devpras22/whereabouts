@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth (password)
 - **AI models:** gpt-4o-mini
 - **Started:** 2026-09-21T15:41:03Z
-- **Last updated:** 2026-09-21T22:30:00Z
+- **Last updated:** 2026-09-21T16:45:00Z
 
 ## Log
 
@@ -91,3 +91,10 @@ Published the repository (public GitHub, linked above) and brought this log to
 the required format: commit SHAs on entries from the initial commit forward,
 normalized repo URL, and inbox addresses redacted per the log rules. Localhost
 development now runs against the dev deployment with a fresh seed.
+
+### 2026-09-21 - efc8f7b
+Dark-mode week view was hard to read: your-shift cells sat near-invisible on
+black and the hour strip had no axis. Added hour labels (00–21) under the
+strip, brightened shift cells, promoted the best-call-window line to display
+contrast, and showed both people's shifts above the chart
+(`src/pages/Board.tsx`, `src/index.css`).
