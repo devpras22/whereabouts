@@ -4,20 +4,22 @@
 - **Event:** Convex All Gas Hackathon
 - **What it does:** A live "who's around" board for small remote teams — ticking local clocks per teammate, work-shift awareness (incl. night shifts), tap-to-set time-off status, pasted announcements parsed to status by OpenAI, per-region holiday awareness, and Heidi — an AgentMail HR inbox that sends invites, per-person local-morning digests, and turns email replies into board updates.
 - **Live app:** https://perceptive-falcon-524.convex.site
-- **Repo:** none
+- **Repo:** https://github.com/devpras22/whereabouts
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://perceptive-falcon-524.convex.cloud
 - **Components:** @convex-dev/rate-limiter, @convex-dev/static-hosting
 - **Convex features:** schema, tables, indexes, queries, mutations, actions, http actions, scheduled functions, crons, auth
-- **Auth:** Convex Auth (password) with seeded demo accounts + custom-account team creation
+- **Auth:** Convex Auth (password)
 - **AI models:** gpt-4o-mini
 - **Started:** 2026-09-21T15:41:03Z
-- **Last updated:** 2026-09-21T22:00:00Z
+- **Last updated:** 2026-09-21T22:30:00Z
 
 ## Log
 
-Entries are date-only and timestamp-derived: this project has no Git history yet,
-so file-modification evidence is weaker than commit evidence and says so.
+Repo history begins at the initial commit 1a6d692, which contains all of the
+work below — the repository was initialized at the end of the build day, so
+those entries are date-only. Entries from the initial commit onward carry
+commit SHAs.
 
 ### 2026-09-21 (afternoon)
 Scaffolded the app (Vite + React + TypeScript) and drafted the full Convex
@@ -68,7 +70,7 @@ https://perceptive-falcon-524.convex.site (`convex/http.ts`, `convex/auth.ts`,
 `src/lib/store.ts`, `src/pages/SignIn.tsx`).
 
 ### 2026-09-21 (late night)
-Built Heidi, the HR agent inbox on AgentMail (heidi-hr@agentmail.to): teammate
+Built Heidi, the HR agent inbox on AgentMail (AGENTMAIL_INBOX_ID): teammate
 invites go out when a founder adds someone; a 15-minute cron sends each person
 their digest at their own local 8am (shift-aware lines, deduped per day); and an
 inbound webhook route on Convex parses human replies ("off friday, family
@@ -83,3 +85,9 @@ email received; same loop on a self-created team ("off tomorrow, sick day" →
 off from Tue 22 Sept + confirmation). Send API route is
 `/v0/inboxes/{inbox_id}/messages/send` (documented), webhook `message.received`
 payload has `message.from` as a plain string and `extracted_text` pre-stripped.
+
+### 2026-09-21 (late night) - 1a6d692
+Published the repository (public GitHub, linked above) and brought this log to
+the required format: commit SHAs on entries from the initial commit forward,
+normalized repo URL, and inbox addresses redacted per the log rules. Localhost
+development now runs against the dev deployment with a fresh seed.
