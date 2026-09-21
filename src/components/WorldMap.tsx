@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 type MapCard = { name: string; city: string; tz: string; kind: string };
 
 const W = 1440;
-const H = 720;
+const H = 760;
+const LAT_TOP = 78; // inhabited-world crop: no empty polar bands
+const LAT_BOTTOM = -56;
 
 const CITY_COORDS: Record<string, [number, number]> = {
   pune: [18.52, 73.86],
@@ -74,15 +76,15 @@ async function loadLandDots(): Promise<[number, number][] | null> {
     if (!res.ok) return null;
     const topo = await res.json();
     const t = topo.transform;
-    // TopoJSON deltas accumulate ACROSS arcs — the accumulator must live
-    // outside the map or every country after the first shifts position.
-    let ax = 0, ay = 0;
-    const arcs: number[][][] = topo.arcs.map((arc: number[][]) =>
-      arc.map(([dx, dy]: number[]) => {
-        ax += dx; ay += dy;
-        return [t.translate[0] + ax * t.scale[0], t.translate[1] + ay * t.scale[1]];
-      }),
-    );
+    // Deltas reset per arc (verified empirically: India decodes to
+    // lon 68..97, lat 8..35 with per-arc reset, garbage otherwise).
+    const arcs: number[][][] = topo.arcs.map((arc: number[][]) => {
+      let x = 0, y = 0;
+      return arc.map(([dx, dy]: number[]) => {
+        x += dx; y += dy;
+        return [t.translate[0] + x * t.scale[0], t.translate[1] + y * t.scale[1]];
+      });
+    });
     const ringPoints = (idxs: number[]): number[][] =>
       idxs.flatMap((i) => (i < 0 ? [...arcs[~i]].reverse() : arcs[i]));
 
@@ -98,7 +100,7 @@ async function loadLandDots(): Promise<[number, number][] | null> {
           const pts = ringPoints(r);
           pts.forEach(([lon, lat], i) => {
             const x = ((lon + 180) / 360) * W;
-            const y = ((90 - lat) / 180) * H;
+            const y = ((LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM)) * H;
             if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
           });
           c.closePath();
@@ -106,13 +108,14 @@ async function loadLandDots(): Promise<[number, number][] | null> {
         c.fill("evenodd");
       }
     }
+    const py0 = (lat: number) => ((LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM)) * H;
     const img = c.getImageData(0, 0, W, H).data;
     const dots: [number, number][] = [];
     const step = 3; // degrees per dot
-    for (let lat = -84; lat <= 84; lat += step) {
+    for (let lat = LAT_BOTTOM; lat <= LAT_TOP; lat += step) {
       for (let lon = -180; lon < 180; lon += step) {
         const x = Math.floor(((lon + 180) / 360) * W);
-        const y = Math.floor(((90 - lat) / 180) * H);
+        const y = Math.floor(py0(lat));
         if (img[(y * W + x) * 4 + 3] > 120) dots.push([lon, lat]);
       }
     }
@@ -142,7 +145,7 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
       const sun = sunPos(now);
       c.clearRect(0, 0, W, H);
       const px = (lon: number) => ((lon + 180) / 360) * W;
-      const py = (lat: number) => ((90 - lat) / 180) * H;
+      const py = (lat: number) => ((LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM)) * H;
 
       if (land) {
         for (const [lon, lat] of land) {
@@ -152,10 +155,10 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
       } else if (land === null) {
         // fallback: graticule so the pins still have a world to sit on
         c.fillStyle = "#222222";
-        for (let lat = -75; lat <= 75; lat += 15)
+        for (let lat = LAT_BOTTOM; lat <= LAT_TOP; lat += 12)
           for (let lon = -180; lon < 180; lon += 7.5) c.fillRect(px(lon), py(lat), 2, 2);
         for (let lon = -180; lon < 180; lon += 15)
-          for (let lat = -90; lat < 90; lat += 4) c.fillRect(px(lon), py(lat), 2, 2);
+          for (let lat = LAT_BOTTOM; lat < LAT_TOP; lat += 4) c.fillRect(px(lon), py(lat), 2, 2);
       }
 
       const pins = cards

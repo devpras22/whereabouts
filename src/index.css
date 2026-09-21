@@ -427,7 +427,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
 /* ---------- your row: status + custom calendar + profile ---------- */
 .yourrow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .yourrow-avatar { width: 52px; height: 52px; }
-.yourrow-left { display: flex; flex-direction: column; gap: 6px; }
+.yourrow-left { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; }
+.yourrow-left .tag { margin-left: -14px; padding-left: 14px; }
+.only-light { display: none; }
+:root[data-theme="light"] .only-light { display: inline; }
+:root[data-theme="light"] .only-dark { display: none; }
 .yourrow-left strong { font-size: 17px; font-weight: 500; color: var(--text-primary); }
 .yourrow-left .linkbtn { font-size: 12px; margin-left: 4px; }
 .tag { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary); }

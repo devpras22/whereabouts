@@ -350,7 +350,7 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
 
   const chip =
     viewer.status.kind === "around" ? (
-      <span className="tag tag-ok"><span className="dot dot-ok" /> you're around</span>
+      <span className="tag tag-ok"><span className="dot dot-success" /> you're around</span>
     ) : viewer.status.kind === "off" ? (
       <span className="tag"><span className="dot dot-warning" /> off today{viewer.status.note ? ` · ${viewer.status.note}` : ""}</span>
     ) : (
@@ -381,7 +381,7 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
         </span>
         <input
           className="note"
-          placeholder="note (optional), rides along with your next tap"
+          placeholder="note (optional)"
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
