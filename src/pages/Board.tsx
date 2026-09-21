@@ -323,14 +323,15 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
   const [note, setNote] = useState("");
   const [sent, setSent] = useState<string | null>(null);
   const [calOpen, setCalOpen] = useState(false);
+  const [rangeFrom, setRangeFrom] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const setStatus = useSetStatus();
 
-  const apply = (kind: StatusKind, to?: string) => {
+  const apply = (kind: StatusKind, from = iso(0), to?: string) => {
     setStatus({
       kind,
-      from: iso(0),
-      to: kind === "around" ? iso(0) : (to ?? iso(0)),
+      from,
+      to: kind === "around" ? from : (to ?? from),
       note: note || undefined,
       source: "tap",
     }).then(() => {
@@ -339,11 +340,22 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
           ? "You're around."
           : kind === "off"
             ? "Marked off for today. Everyone's board just updated."
-            : `Marked away till ${fmtDate(to ?? iso(0))}. Everyone's board just updated.`,
+            : from === iso(0)
+              ? `Marked away till ${fmtDate(to ?? from)}. Everyone's board just updated.`
+              : `Marked away ${fmtDate(from)} → ${fmtDate(to ?? from)}. Everyone sees it coming.`,
       );
       setNote("");
       setTimeout(() => setSent(null), 5000);
     }).catch((e) => setSent(String(e).slice(0, 80)));
+  };
+
+  // Two taps book a range: first day, then last day (same day twice = one day).
+  const pickRange = (d: string) => {
+    if (!rangeFrom) { setRangeFrom(d); return; }
+    const [a, b] = rangeFrom <= d ? [rangeFrom, d] : [d, rangeFrom];
+    setRangeFrom(null);
+    setCalOpen(false);
+    apply("away", a, b);
   };
 
   const chip =
@@ -369,12 +381,17 @@ function YourRow({ viewer }: { viewer: BoardCard }) {
         <button className={`btn ${viewer.status.kind === "around" ? "primary" : ""}`} onClick={() => apply("around")}>Around</button>
         <button className={`btn ${viewer.status.kind === "off" ? "primary" : ""}`} onClick={() => apply("off")}>Off today</button>
         <span className="awaywrap">
-          <button className={`btn ${viewer.status.kind === "away" ? "primary" : ""}`} onClick={() => setCalOpen((o) => !o)}>Away till…</button>
+          <button className={`btn ${viewer.status.kind === "away" ? "primary" : ""}`} onClick={() => { setRangeFrom(null); setCalOpen((o) => !o); }}>Book away…</button>
           {calOpen && (
-            <CalendarPop
-              pick={(d) => { setCalOpen(false); apply("away", d); }}
-              close={() => setCalOpen(false)}
-            />
+            <>
+              {rangeFrom && (
+                <span className="range-hint mono">away from {fmtDate(rangeFrom)} · pick the last day</span>
+              )}
+              <CalendarPop
+                pick={pickRange}
+                close={() => { setCalOpen(false); setRangeFrom(null); }}
+              />
+            </>
           )}
         </span>
         <input
@@ -432,8 +449,8 @@ function PasteBox({ viewer }: { viewer: BoardCard }) {
   return (
     <div className="pastebox">
       <div className="pastebox-head">
-        <strong>Paste an announcement</strong>
-        <span className="meta">anything you already sent. Slack, WhatsApp, anything · applies to you ({viewer.name})</span>
+        <strong>Already told your team you're off? Paste it here</strong>
+        <span className="meta">paste the message you already sent anywhere · gpt-4o-mini reads it and updates your board · applies to you ({viewer.name})</span>
       </div>
       <div className="pastebox-row">
         <textarea

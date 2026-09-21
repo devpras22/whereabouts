@@ -56,6 +56,7 @@ export const sendDigest = internalAction({
     if (!limit.ok) throw new ConvexError("Heidi is sending too fast");
     const board = await ctx.runQuery(internal.people.digestView, { personId });
     if (!board || !board.email) return "no email on file";
+    if (board.email.endsWith("@demo.whereabouts.app")) return "demo teammate has no real inbox — sign in with your own account to get the email";
     const { person, teamName, around, off, ahead, shiftings } = board;
     const lines: string[] = [];
     lines.push(`Good morning ${person.name} — here's ${teamName} today.`);

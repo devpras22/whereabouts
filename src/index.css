@@ -545,3 +545,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
 .geoopt:hover { background: var(--surface-raised); }
 .geoopt strong { font-size: 14px; font-weight: 500; }
 .geoopt .meta { font-size: 11px; }
+
+.range-hint {
+  position: absolute; top: -24px; left: 0; white-space: nowrap;
+  font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--success);
+}
