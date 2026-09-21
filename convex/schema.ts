@@ -21,6 +21,8 @@ export default defineSchema({
     teamId: v.optional(v.id("teams")),
     workStart: v.number(), // local hour, e.g. 9
     workEnd: v.number(), // local hour, e.g. 18 (night shift: 22 → 6)
+    avatarSeed: v.optional(v.string()), // DiceBear seed; falls back to name
+    avatarDataUrl: v.optional(v.string()), // uploaded face, small PNG data URL
     lastDigestOn: v.optional(v.string()), // YYYY-MM-DD local — digest dedupe
   }).index("by_email", ["email"]).index("by_team", ["teamId"]),
 

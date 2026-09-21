@@ -30,3 +30,15 @@ export function useUpdateMe() {
 export function useAddTeammate() {
   return useMutation(api.people.addTeammate);
 }
+
+export function useImportHolidays() {
+  return useAction(api.holidays.importRegion);
+}
+
+export function useRenameTeam() {
+  return useMutation(api.people.renameTeam);
+}
+
+export function useRemoveTeammate() {
+  return useMutation(api.people.removeTeammate);
+}

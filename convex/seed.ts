@@ -55,7 +55,7 @@ export const initTeam = mutation({
       await ctx.db.insert("holidays", { ...h, source: "seed" });
     }
     await ctx.db.insert("statuses", { personId: ids["Sana Kulkarni"], kind: "off", from: d(0), to: d(0), note: "family thing", source: "seed", createdAt: now - 5000 });
-    await ctx.db.insert("statuses", { personId: ids["Greg Palmer"], kind: "away", from: d(0), to: d(5), note: "PTO — Big Bend", source: "seed", createdAt: now - 4000 });
+    await ctx.db.insert("statuses", { personId: ids["Greg Palmer"], kind: "away", from: d(0), to: d(5), note: "PTO, Big Bend", source: "seed", createdAt: now - 4000 });
     await ctx.db.insert("statuses", { personId: ids["Ana Souza"], kind: "away", from: d(2), to: d(4), note: "conference in Rio", source: "seed", createdAt: now - 3000 });
     return "seeded";
   },

@@ -44,12 +44,19 @@ export const listBoard = query({
     const holidays = await ctx.db.query("holidays").collect();
     const teams = await ctx.db.query("teams").collect();
     const today = todayISO();
-    const { person: caller } = await callerPerson(ctx);
+    const { user, person: caller } = await callerPerson(ctx);
     const team = caller?.teamId ? teams.find((t) => t._id === caller.teamId) : null;
 
-    // Signed-in founder on their own team sees only their team; everyone else
-    // (including signed-out visitors) sees the demo team.
-    const scoped = caller?.teamId ? people.filter((p) => p.teamId === caller.teamId) : people.filter((p) => !p.teamId);
+    // Own team if the caller has one. Demo teammates (a person row, no team)
+    // see the demo board. A signed-in account with NO person row yet (fresh
+    // custom signup) sees an empty board with the create-team form. Signed-out
+    // visitors see the demo board.
+    const demo = people.filter((p) => !p.teamId);
+    const scoped = caller?.teamId
+      ? people.filter((p) => p.teamId === caller.teamId)
+      : caller || !user
+        ? demo
+        : [];
     const cards = scoped.map((p) => {
       const mine = statuses
         .filter((s) => s.personId === p._id)
@@ -71,6 +78,8 @@ export const listBoard = query({
         tz: p.tz,
         workStart: p.workStart,
         workEnd: p.workEnd,
+        avatarSeed: p.avatarSeed ?? null,
+        avatarDataUrl: p.avatarDataUrl ?? null,
         email: p.email ?? null,
         isViewer: caller?._id != null && caller._id === p._id,
         status: active
@@ -143,6 +152,8 @@ export const updateMe = mutation({
     region: v.optional(v.string()),
     workStart: v.optional(v.number()),
     workEnd: v.optional(v.number()),
+    avatarSeed: v.optional(v.string()),
+    avatarDataUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { person } = await callerPerson(ctx);
@@ -284,5 +295,33 @@ export const digestTick = internalMutation({
       await ctx.db.patch(p._id, { lastDigestOn: localDate });
       await ctx.scheduler.runAfter(0, internal.heidi.sendDigest, { personId: p._id });
     }
+  },
+});
+
+
+// --- team management (founder only) ---
+
+export const renameTeam = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    const { person } = await callerPerson(ctx);
+    if (!person?.teamId) throw new Error("Create your team first.");
+    if (!name.trim()) throw new Error("Team name can't be empty.");
+    await ctx.db.patch(person.teamId, { name: name.trim() });
+  },
+});
+
+export const removeTeammate = mutation({
+  args: { personId: v.id("people") },
+  handler: async (ctx, { personId }) => {
+    const { person: me } = await callerPerson(ctx);
+    if (!me?.teamId) throw new Error("Create your team first.");
+    const target = await ctx.db.get(personId);
+    if (!target || target.teamId !== me.teamId) throw new Error("That person isn't on your team.");
+    if (target._id === me._id) throw new Error("You can't remove yourself.");
+    for await (const s of ctx.db.query("statuses").withIndex("by_person", (q: any) => q.eq("personId", personId))) {
+      await ctx.db.delete(s._id);
+    }
+    await ctx.db.delete(personId);
   },
 });

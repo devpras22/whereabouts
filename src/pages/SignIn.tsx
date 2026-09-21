@@ -22,13 +22,13 @@ export default function SignIn({ onHome }: { onHome: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const enter = async (email: string, password: string) => {
+  // Demo buttons: sign in, auto-registering the seeded account on first click.
+  const enterDemo = async (email: string, password: string) => {
     setBusy(email);
     setError(null);
     try {
       await signIn("password", { email, password, flow: "signIn" });
     } catch {
-      // First ever login for this demo account — register it, then continue.
       try {
         await signIn("password", { email, password, flow: "signUp" });
       } catch (e2) {
@@ -36,6 +36,38 @@ export default function SignIn({ onHome }: { onHome: () => void }) {
         setBusy(null);
         return;
       }
+    }
+    setBusy(null);
+  };
+
+  // Custom accounts: explicit sign-in — no silent fallbacks, human errors.
+  const signInOnly = async (email: string, password: string) => {
+    setBusy(email);
+    setError(null);
+    try {
+      await signIn("password", { email, password, flow: "signIn" });
+    } catch {
+      setError("That email and password don't match. Demo accounts use demo1234.");
+      setBusy(null);
+      return;
+    }
+    setBusy(null);
+  };
+
+  const signUpOnly = async (email: string, password: string) => {
+    setBusy(email);
+    setError(null);
+    try {
+      await signIn("password", { email, password, flow: "signUp" });
+    } catch (e) {
+      const msg = String(e);
+      setError(
+        /exist|taken|registered|already/i.test(msg)
+          ? "That email already has an account. Switch to Sign in."
+          : "Couldn't create the account. Check the email and use 8+ characters.",
+      );
+      setBusy(null);
+      return;
     }
     setBusy(null);
   };
@@ -50,7 +82,7 @@ export default function SignIn({ onHome }: { onHome: () => void }) {
       <section className="hero">
         <h1>Sign in as a teammate.</h1>
         <p className="sub">
-          The demo team is pre-seeded on Convex. Pick anyone — you'll land on the
+          The demo team is pre-seeded on Convex. Pick anyone: you'll land on the
           board as them, and only your own status is yours to change.
         </p>
 
@@ -60,7 +92,7 @@ export default function SignIn({ onHome }: { onHome: () => void }) {
               key={p.email}
               className="strip-card demo"
               disabled={busy !== null}
-              onClick={() => enter(p.email, DEMO_PASSWORD)}
+              onClick={() => enterDemo(p.email, DEMO_PASSWORD)}
             >
               <div>
                 <strong>{busy === p.email ? "Signing in…" : p.name}</strong>
@@ -74,26 +106,52 @@ export default function SignIn({ onHome }: { onHome: () => void }) {
         <p className="meta mono">
           password for all demo accounts: demo1234 · or use your own email below
         </p>
-        <CustomAccount enter={enter} busy={busy !== null} />
+        <CustomAccount
+          busy={busy !== null}
+          onSignIn={signInOnly}
+          onSignUp={signUpOnly}
+        />
         {error && <div className="parse-error">{error}</div>}
       </section>
     </div>
   );
 }
 
-function CustomAccount({ enter, busy }: { enter: (email: string, password: string) => void; busy: boolean }) {
+function CustomAccount({
+  busy,
+  onSignIn,
+  onSignUp,
+}: {
+  busy: boolean;
+  onSignIn: (email: string, password: string) => void;
+  onSignUp: (email: string, password: string) => void;
+}) {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const valid = email.includes("@") && password.length >= 8;
   return (
     <div className="pastebox custom-account">
       <div className="pastebox-row">
         <input placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input placeholder="password (8+ chars)" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className="btn primary" disabled={busy || !email || password.length < 8} onClick={() => enter(email, password)}>
-          Create account
-        </button>
+        {mode === "signin" ? (
+          <button className="btn primary" disabled={busy || !valid} onClick={() => onSignIn(email, password)}>
+            Sign in
+          </button>
+        ) : (
+          <button className="btn primary" disabled={busy || !valid} onClick={() => onSignUp(email, password)}>
+            Create account
+          </button>
+        )}
       </div>
-      <p className="meta">Custom accounts create YOUR OWN team — Heidi (your HR inbox) then invites your teammates by email.</p>
+      <p className="meta">
+        {mode === "signin" ? (
+          <>New here? <button className="linkbtn" onClick={() => setMode("signup")}>Create an account</button> It starts your own team, and Heidi emails your teammates an invite.</>
+        ) : (
+          <>Already have an account? <button className="linkbtn" onClick={() => setMode("signin")}>Sign in</button></>
+        )}
+      </p>
     </div>
   );
 }

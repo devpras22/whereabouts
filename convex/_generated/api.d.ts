@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
 import type * as heidi from "../heidi.js";
+import type * as holidays from "../holidays.js";
 import type * as http from "../http.js";
 import type * as parse from "../parse.js";
 import type * as people from "../people.js";
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
   heidi: typeof heidi;
+  holidays: typeof holidays;
   http: typeof http;
   parse: typeof parse;
   people: typeof people;

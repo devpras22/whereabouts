@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAddTeammate, useCreateTeam, useUpdateMe } from "../lib/store";
 
-const COMMON_TZ = [
+export const COMMON_TZ = [
   "Asia/Kolkata", "Asia/Manila", "Asia/Singapore", "Asia/Dubai",
   "Europe/London", "Europe/Berlin", "Europe/Lisbon",
   "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Sao_Paulo",
@@ -48,10 +48,10 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
     <div className="pastebox teambox">
       <div className="pastebox-head">
         <strong>Create your team</strong>
-        <span className="meta">your board starts empty · Heidi (heidi-hr@agentmail.to) becomes your HR inbox</span>
+        <span className="meta">your board starts empty · Heidi, the AI agent who runs your HR, onboards everyone</span>
       </div>
       <div className="pastebox-row">
-        <input placeholder="Team name — e.g. Acme" value={name} onChange={(e) => setName(e.target.value)} />
+        <input placeholder="Team name, e.g. Acme" value={name} onChange={(e) => setName(e.target.value)} />
         <input placeholder="Your city" value={city} onChange={(e) => setCity(e.target.value)} />
         <select value={tz} onChange={(e) => setTz(e.target.value)}>
           {COMMON_TZ.map((z) => <option key={z} value={z}>{z.split("/")[1]?.replace("_", " ") ?? z}</option>)}
@@ -92,7 +92,7 @@ export function AddTeammate() {
         workStart: num(ws, 9),
         workEnd: num(we, 18),
       });
-      setMsg(`Added ${name.trim()} — Heidi just emailed their invite to ${email.trim()}.`);
+      setMsg(`Added ${name.trim()}. Heidi just emailed their invite.`);
       setName(""); setEmail(""); setCity("");
     } catch (e) {
       setMsg(String(e).slice(0, 120));

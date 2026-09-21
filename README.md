@@ -2,8 +2,8 @@
 
 Know who's around before you ping. A live availability board for small remote
 teams — local clocks, work shifts (night shifts included), time-off, per-region
-holidays — plus **Heidi**, the team's HR inbox (an AI agent on
-[AgentMail](https://agentmail.to)) that invites teammates, sends each person a
+holidays, plus **Heidi**, the AI agent who runs HR (on
+[AgentMail](https://agentmail.to)): she invites teammates, sends each person a
 digest at *their* local 8am, and turns an email reply into a board update.
 
 **Convex All Gas hackathon build.** Live: https://perceptive-falcon-524.convex.site

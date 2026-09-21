@@ -8,6 +8,7 @@ const app = defineApp({
     OPENAI_API_KEY: v.optional(v.string()),
     AGENTMAIL_API_KEY: v.optional(v.string()),
     AGENTMAIL_INBOX_ID: v.optional(v.string()),
+    FIRECRAWL_API_KEY: v.optional(v.string()),
   },
 });
 app.use(rateLimiter);
