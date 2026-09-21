@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-type MapCard = { name: string; city: string; tz: string; kind: string };
+type MapCard = { name: string; city: string; tz: string; kind: string; lat: number | null; lng: number | null };
 
 const W = 1440;
 const H = 760;
@@ -43,8 +43,12 @@ const TZ_COORDS: Record<string, [number, number]> = {
   "Australia/Sydney": [-33.87, 151.21],
 };
 
-function coordsFor(city: string, tz: string): [number, number] | null {
-  return CITY_COORDS[city.trim().toLowerCase()] ?? TZ_COORDS[tz] ?? null;
+function coordsFor(card: MapCard): [number, number] | null {
+  // Exact geocoded pin wins; approximations only as fallbacks.
+  if (card.lat != null && card.lng != null) return [card.lng, card.lat];
+  const c = CITY_COORDS[card.city.trim().toLowerCase()];
+  if (c) return c;
+  return TZ_COORDS[card.tz] ?? null;
 }
 
 // Subsolar point right now: where the sun is directly overhead.
@@ -148,8 +152,11 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
       const py = (lat: number) => ((LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM)) * H;
 
       if (land) {
+        const lightMode = document.documentElement.dataset.theme === "light";
+        const dayCol = lightMode ? "#CDCDCD" : "#4A4A4A";
+        const nightCol = lightMode ? "#8E8E8E" : "#2B2B2B";
         for (const [lon, lat] of land) {
-          c.fillStyle = isDay(lon, lat, sun) ? "#4A4A4A" : "#2B2B2B";
+          c.fillStyle = isDay(lon, lat, sun) ? dayCol : nightCol;
           c.fillRect(px(lon), py(lat), 2.8, 2.8);
         }
       } else if (land === null) {
@@ -162,12 +169,17 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
       }
 
       const pins = cards
-        .map((card, i) => ({ card, ll: coordsFor(card.city, card.tz), i }))
+        .map((card, i) => ({ card, ll: coordsFor(card), i }))
         .filter((p): p is { card: MapCard; ll: [number, number]; i: number } => p.ll !== null)
         .sort((a, b) => a.ll[0] - b.ll[0]);
 
+      // Place labels right of each pin, nudged DOWN past any label already
+      // placed there, with a leader line back to the pin — the label can
+      // never read as a different location than the pin.
+      c.font = "600 15px 'Space Mono', monospace";
+      const placed: { x1: number; x2: number; y: number }[] = [];
       const t = now.getTime() / 1000;
-      for (const { card, ll, i } of pins) {
+      pins.forEach(({ card, ll, i }) => {
         const [lon, lat] = ll;
         const x = px(lon), y = py(lat);
         const off = card.kind !== "around";
@@ -187,16 +199,30 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
         c.stroke();
 
         const label = `${card.name.split(" ")[0]} ${localHour(card.tz, now)}`;
-        c.font = "600 15px 'Space Mono', monospace";
         const wLabel = c.measureText(label).width;
-        const offsets = [-16, 16, -32, 32];
-        const ly = y + offsets[i % 4];
-        c.fillStyle = "rgba(0,0,0,0.55)";
-        c.fillRect(x - wLabel / 2 - 5, ly - 12, wLabel + 10, 17);
+        let lx = x + 14;
+        let ly = y - 8;
+        if (lx + wLabel + 8 > W) { lx = x - 14 - wLabel - 8; ly = y - 8; }
+        let guard = 0;
+        while (placed.some((p) => lx < p.x2 + 8 && lx + wLabel + 8 > p.x1 && Math.abs(ly - p.y) < 19) && guard++ < 12) {
+          ly += 19;
+        }
+        placed.push({ x1: lx - 6, x2: lx + wLabel + 6, y: ly });
+
+        // leader line from pin to label
+        c.beginPath();
+        c.moveTo(x + 5, y - 3);
+        c.lineTo(lx - 6, ly - 5);
+        c.strokeStyle = off ? "rgba(212,168,67,0.5)" : "rgba(74,158,92,0.5)";
+        c.lineWidth = 1;
+        c.stroke();
+
+        c.fillStyle = "rgba(0,0,0,0.6)";
+        c.fillRect(lx - 6, ly - 12, wLabel + 12, 17);
         c.fillStyle = off ? "#EBD28A" : "#C9E8CF";
-        c.textAlign = "center";
-        c.fillText(label, x, ly);
-      }
+        c.textAlign = "left";
+        c.fillText(label, lx, ly);
+      });
 
       raf = requestAnimationFrame(draw);
     };

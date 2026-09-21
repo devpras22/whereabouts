@@ -57,17 +57,13 @@ export default function DayRibbon({ cards }: { cards: RibbonCard[] }) {
                   className={`bcell ${inShift(c.workStart, c.workEnd, h) ? "work" : ""}`}
                 />
               ))}
-              {inShift(c.workStart, c.workEnd, Math.floor(now)) && (
-                <>
-                  <span className="nowdot" style={{ left: `calc(${(now / 24) * 100}% - 1px)` }} />
-                  <span className="nowpip" style={{ left: `calc(${(now / 24) * 100}% - 3.5px)` }} />
-                </>
-              )}
+              <span className="nowdot" style={{ left: `calc(${(now / 24) * 100}% - 1px)` }} />
+              <span className="nowpip" style={{ left: `calc(${(now / 24) * 100}% - 3.5px)` }} />
             </div>
           </div>
         );
       })}
-      <p className="meta mono ribbon-note">green blocks: on shift (their local hours) · <span className="only-dark">white</span><span className="only-light">black</span> line: their now, only while on shift · amber row: off or away today</p>
+      <p className="meta mono ribbon-note">green blocks: on shift (their local hours) · <span className="only-dark">white</span><span className="only-light">black</span> line: where their now is · amber row: off or away today</p>
     </div>
   );
 }

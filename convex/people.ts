@@ -80,6 +80,8 @@ export const listBoard = query({
         workEnd: p.workEnd,
         avatarSeed: p.avatarSeed ?? null,
         avatarDataUrl: p.avatarDataUrl ?? null,
+        lat: p.lat ?? null,
+        lng: p.lng ?? null,
         email: p.email ?? null,
         isViewer: caller?._id != null && caller._id === p._id,
         status: active
@@ -127,7 +129,8 @@ export const createTeam = mutation({
     if (!user?.email) throw new Error("Sign in with an email account first.");
     if (person?.teamId) throw new Error("You're already on a team.");
     const teamId = await ctx.db.insert("teams", { name, inboxId: "heidi-hr@agentmail.to", createdAt: Date.now() });
-    // Founder: create a person card bound to this account.
+    // Founder: create a person card bound to this account. City/tz/pin
+    // arrive right after via updateMe once they pick a city (geocoded).
     const founder = await ctx.db.insert("people", {
       name: user.name ?? user.email.split("@")[0],
       role: "Founder",
@@ -154,6 +157,8 @@ export const updateMe = mutation({
     workEnd: v.optional(v.number()),
     avatarSeed: v.optional(v.string()),
     avatarDataUrl: v.optional(v.string()),
+    lat: v.optional(v.number()),
+    lng: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { person } = await callerPerson(ctx);
@@ -174,6 +179,8 @@ export const addTeammate = mutation({
     region: v.optional(v.string()),
     workStart: v.optional(v.number()),
     workEnd: v.optional(v.number()),
+    lat: v.optional(v.number()),
+    lng: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { person } = await callerPerson(ctx);

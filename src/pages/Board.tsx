@@ -21,10 +21,12 @@ import {
   useRenameTeam,
   useRemoveTeammate,
 } from "../lib/store";
-import { AddTeammate, TeamSetup, COMMON_TZ } from "./TeamSetup";
+import { AddTeammate, TeamSetup } from "./TeamSetup";
 import ThemeToggle from "./ThemeToggle";
 import WorldMap from "../components/WorldMap";
 import DayRibbon from "../components/DayRibbon";
+import GeocodeBox from "../components/GeocodeBox";
+import type { Place } from "../components/GeocodeBox";
 
 type ParseResult = {
   mode: "openai" | "stub";
@@ -223,8 +225,7 @@ function ProfileModal({ viewer, onClose }: { viewer: BoardCard; onClose: () => v
   const updateMe = useUpdateMe();
   const [name, setName] = useState(viewer.name);
   const [seed, setSeed] = useState(viewer.avatarSeed ?? viewer.name);
-  const [city, setCity] = useState(viewer.city);
-  const [tz, setTz] = useState(viewer.tz);
+  const [place, setPlace] = useState<Place | null>(null);
   const [ws, setWs] = useState(String(viewer.workStart));
   const [we, setWe] = useState(String(viewer.workEnd));
   const [upload, setUpload] = useState<string | null>(viewer.avatarDataUrl ?? null);
@@ -236,8 +237,11 @@ function ProfileModal({ viewer, onClose }: { viewer: BoardCard; onClose: () => v
       name: name.trim() || undefined,
       avatarSeed: seed,
       avatarDataUrl: upload ?? undefined,
-      city: city.trim() || undefined,
-      tz,
+      city: place?.city,
+      tz: place?.tz,
+      region: place?.region,
+      lat: place?.lat,
+      lng: place?.lng,
       workStart: parseInt(ws, 10) || undefined,
       workEnd: parseInt(we, 10) || undefined,
     })
@@ -297,14 +301,8 @@ function ProfileModal({ viewer, onClose }: { viewer: BoardCard; onClose: () => v
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </div>
           <div className="profile-name">
-            <span className="label">city</span>
-            <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
-          </div>
-          <div className="profile-name">
-            <span className="label">timezone</span>
-            <select value={tz} onChange={(e) => setTz(e.target.value)}>
-              {COMMON_TZ.map((z) => <option key={z} value={z}>{z.split("/")[1]?.replace("_", " ") ?? z}</option>)}
-            </select>
+            <span className="label">city (timezone, map pin and holidays update with it)</span>
+            <GeocodeBox initial={viewer.city} onPick={setPlace} />
           </div>
           <div className="profile-name shiftfield">
             <span className="label">shift (local hours)</span>
@@ -690,7 +688,7 @@ export default function Board({ onHome, onSignOut }: { onHome: () => void; onSig
           </div>
         </section>
         <section className="viewpane">
-          <WorldMap cards={board.cards.map((c) => ({ name: c.name, city: c.city, tz: c.tz, kind: c.status.kind }))} />
+          <WorldMap cards={board.cards.map((c) => ({ name: c.name, city: c.city, tz: c.tz, kind: c.status.kind, lat: c.lat, lng: c.lng }))} />
         </section>
         <section className="viewpane">
           <DayRibbon cards={board.cards.map((c) => ({ _id: c._id, name: c.name, city: c.city, tz: c.tz, workStart: c.workStart, workEnd: c.workEnd, kind: c.status.kind, isViewer: c.isViewer }))} />

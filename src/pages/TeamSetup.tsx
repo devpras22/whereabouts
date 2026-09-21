@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { useAddTeammate, useCreateTeam, useUpdateMe } from "../lib/store";
-
-export const COMMON_TZ = [
-  "Asia/Kolkata", "Asia/Manila", "Asia/Singapore", "Asia/Dubai",
-  "Europe/London", "Europe/Berlin", "Europe/Lisbon",
-  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Sao_Paulo",
-  "Australia/Sydney",
-];
+import GeocodeBox from "../components/GeocodeBox";
+import type { Place } from "../components/GeocodeBox";
 
 function num(v: string, d: number): number {
   const n = parseInt(v, 10);
@@ -17,8 +12,7 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
   const createTeam = useCreateTeam();
   const updateMe = useUpdateMe();
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [tz, setTz] = useState("Asia/Kolkata");
+  const [place, setPlace] = useState<Place | null>(null);
   const [ws, setWs] = useState("9");
   const [we, setWe] = useState("18");
   const [busy, setBusy] = useState(false);
@@ -30,9 +24,11 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
     try {
       await createTeam({ name: name.trim() });
       await updateMe({
-        name: undefined, role: undefined, region: undefined,
-        city: city.trim() || undefined,
-        tz,
+        city: place?.city,
+        tz: place?.tz,
+        region: place?.region,
+        lat: place?.lat,
+        lng: place?.lng,
         workStart: num(ws, 9),
         workEnd: num(we, 18),
       });
@@ -52,10 +48,7 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
       </div>
       <div className="pastebox-row">
         <input placeholder="Team name, e.g. Acme" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Your city" value={city} onChange={(e) => setCity(e.target.value)} />
-        <select value={tz} onChange={(e) => setTz(e.target.value)}>
-          {COMMON_TZ.map((z) => <option key={z} value={z}>{z.split("/")[1]?.replace("_", " ") ?? z}</option>)}
-        </select>
+        <GeocodeBox label="city" onPick={setPlace} />
         <span className="till">
           shift <input className="shift-in" value={ws} onChange={(e) => setWs(e.target.value)} />–
           <input className="shift-in" value={we} onChange={(e) => setWe(e.target.value)} />
@@ -64,6 +57,7 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
           {busy ? "Creating…" : "Create team"}
         </button>
       </div>
+      <p className="meta mono">type your city · timezone, map pin and holidays come from it automatically</p>
       {error && <div className="parse-error">{error}</div>}
     </div>
   );
@@ -73,8 +67,7 @@ export function AddTeammate() {
   const addTeammate = useAddTeammate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [city, setCity] = useState("");
-  const [tz, setTz] = useState("Asia/Kolkata");
+  const [place, setPlace] = useState<Place | null>(null);
   const [ws, setWs] = useState("9");
   const [we, setWe] = useState("18");
   const [busy, setBusy] = useState(false);
@@ -87,13 +80,16 @@ export function AddTeammate() {
       await addTeammate({
         name: name.trim(),
         email: email.trim(),
-        city: city.trim() || undefined,
-        tz,
+        city: place?.city,
+        tz: place?.tz ?? "Asia/Kolkata",
+        region: place?.region,
+        lat: place?.lat,
+        lng: place?.lng,
         workStart: num(ws, 9),
         workEnd: num(we, 18),
       });
       setMsg(`Added ${name.trim()}. Heidi just emailed their invite.`);
-      setName(""); setEmail(""); setCity("");
+      setName(""); setEmail(""); setPlace(null);
     } catch (e) {
       setMsg(String(e).slice(0, 120));
     } finally {
@@ -110,10 +106,7 @@ export function AddTeammate() {
       <div className="pastebox-row">
         <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
         <input placeholder="their@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-        <select value={tz} onChange={(e) => setTz(e.target.value)}>
-          {COMMON_TZ.map((z) => <option key={z} value={z}>{z.split("/")[1]?.replace("_", " ") ?? z}</option>)}
-        </select>
+        <GeocodeBox label="city" onPick={setPlace} />
         <span className="till">
           shift <input className="shift-in" value={ws} onChange={(e) => setWs(e.target.value)} />–
           <input className="shift-in" value={we} onChange={(e) => setWe(e.target.value)} />
