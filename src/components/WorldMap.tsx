@@ -176,55 +176,64 @@ export default function WorldMap({ cards }: { cards: MapCard[] }) {
         .filter((p): p is { card: MapCard; ll: [number, number]; i: number } => p.ll !== null)
         .sort((a, b) => a.ll[0] - b.ll[0]);
 
-      // Place labels right of each pin, nudged DOWN past any label already
-      // placed there, with a leader line back to the pin — the label can
-      // never read as a different location than the pin.
-      c.font = "600 15px 'Space Mono', monospace";
-      const placed: { x1: number; x2: number; y: number }[] = [];
       const t = now.getTime() / 1000;
+
+      // Pass 1: draw every pin, remember where they all are.
+      const pinPts: { x: number; y: number; off: boolean }[] = [];
       pins.forEach(({ card, ll, i }) => {
         const [lon, lat] = ll;
         const x = px(lon), y = py(lat);
         const off = card.kind !== "around";
         const col = off ? "#D4A843" : "#4A9E5C";
-        const pulse = 5 + 3.5 * Math.sin(t * 2 + i);
+        const pulse = 6 + 3.5 * Math.sin(t * 2 + i);
         c.beginPath();
         c.arc(x, y, pulse, 0, Math.PI * 2);
         c.strokeStyle = off ? "rgba(212,168,67,0.45)" : "rgba(74,158,92,0.45)";
         c.lineWidth = 1.6;
         c.stroke();
         c.beginPath();
-        c.arc(x, y, 4, 0, Math.PI * 2);
+        c.arc(x, y, 5, 0, Math.PI * 2);
         c.fillStyle = col;
         c.fill();
         c.strokeStyle = "#FFFFFF";
+        c.lineWidth = 1.4;
+        c.stroke();
+        pinPts.push({ x, y, off });
+      });
+
+      // Pass 2: labels — 18px bold, each one finds a slot that avoids BOTH
+      // other labels and every pin, dropping down until it fits.
+      c.font = "700 18px 'Space Mono', monospace";
+      const placedLbls: { x1: number; x2: number; y1: number; y2: number }[] = [];
+      pins.forEach(({ card }, idx) => {
+        const { x, y, off } = pinPts[idx];
+        const label = `${card.name.split(" ")[0]} ${localHour(card.tz, now)}`;
+        const wLabel = c.measureText(label).width;
+        let lx = x + 18;
+        if (lx + wLabel + 10 > W) lx = x - 18 - wLabel;
+        let ly = y + 6; // text baseline
+        const rectAt = (bx: number, by: number) => ({ x1: bx - 9, x2: bx + wLabel + 9, y1: by - 19, y2: by + 5 });
+        const clashes = (r: { x1: number; x2: number; y1: number; y2: number }) =>
+          placedLbls.some((p) => r.x1 < p.x2 && r.x2 > p.x1 && r.y1 < p.y2 && r.y2 > p.y1) ||
+          pinPts.some((p) => r.x1 < p.x + 8 && r.x2 > p.x - 8 && r.y1 < p.y + 8 && r.y2 > p.y - 8);
+        let r = rectAt(lx, ly);
+        let tries = 0;
+        while (clashes(r) && tries++ < 12) { ly += 27; r = rectAt(lx, ly); }
+
+        // leader line from the pin to the label
+        c.beginPath();
+        c.moveTo(x + 6, y + 4);
+        c.lineTo(lx > x ? lx - 10 : lx + wLabel + 10, ly - 8);
+        c.strokeStyle = off ? "rgba(212,168,67,0.55)" : "rgba(74,158,92,0.55)";
         c.lineWidth = 1.2;
         c.stroke();
 
-        const label = `${card.name.split(" ")[0]} ${localHour(card.tz, now)}`;
-        const wLabel = c.measureText(label).width;
-        let lx = x + 14;
-        let ly = y - 8;
-        if (lx + wLabel + 8 > W) { lx = x - 14 - wLabel - 8; ly = y - 8; }
-        let guard = 0;
-        while (placed.some((p) => lx < p.x2 + 8 && lx + wLabel + 8 > p.x1 && Math.abs(ly - p.y) < 19) && guard++ < 12) {
-          ly += 19;
-        }
-        placed.push({ x1: lx - 6, x2: lx + wLabel + 6, y: ly });
-
-        // leader line from pin to label
-        c.beginPath();
-        c.moveTo(x + 5, y - 3);
-        c.lineTo(lx - 6, ly - 5);
-        c.strokeStyle = off ? "rgba(212,168,67,0.5)" : "rgba(74,158,92,0.5)";
-        c.lineWidth = 1;
-        c.stroke();
-
-        c.fillStyle = "rgba(0,0,0,0.6)";
-        c.fillRect(lx - 6, ly - 12, wLabel + 12, 17);
+        c.fillStyle = "rgba(0,0,0,0.68)";
+        c.fillRect(r.x1, r.y1, r.x2 - r.x1, r.y2 - r.y1);
         c.fillStyle = off ? "#EBD28A" : "#C9E8CF";
         c.textAlign = "left";
         c.fillText(label, lx, ly);
+        placedLbls.push(r);
       });
 
       raf = requestAnimationFrame(draw);

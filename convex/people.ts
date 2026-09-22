@@ -332,3 +332,21 @@ export const removeTeammate = mutation({
     await ctx.db.delete(personId);
   },
 });
+
+// One-off: remove every custom team (demo people have no teamId) plus their
+// statuses and teams. Used to reset test artifacts before recording.
+export const purgeTeams = mutation({
+  args: {},
+  handler: async (ctx) => {
+    let people = 0, statuses = 0, teams = 0;
+    for await (const p of ctx.db.query("people")) {
+      if (!p.teamId) continue;
+      for await (const s of ctx.db.query("statuses").withIndex("by_person", (q: any) => q.eq("personId", p._id))) {
+        await ctx.db.delete(s._id); statuses++;
+      }
+      await ctx.db.delete(p._id); people++;
+    }
+    for await (const t of ctx.db.query("teams")) { await ctx.db.delete(t._id); teams++; }
+    return { people, statuses, teams };
+  },
+});
