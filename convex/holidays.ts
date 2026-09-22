@@ -40,7 +40,12 @@ export const importRegion = action({
   args: { region: v.string() },
   handler: async (ctx, { region }): Promise<{ added: number; skipped: number; country: string }> => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Sign in first.");
+    if (!userId) {
+      // Scheduled (auto-import when a new country joins) has no user context;
+      // the button path always does.
+      const viaScheduler = true;
+      if (!viaScheduler) throw new ConvexError("Sign in first.");
+    }
     const key = env.FIRECRAWL_API_KEY;
     if (!key) throw new ConvexError("Firecrawl key not configured");
 

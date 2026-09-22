@@ -15,6 +15,7 @@ import type * as holidays from "../holidays.js";
 import type * as http from "../http.js";
 import type * as parse from "../parse.js";
 import type * as people from "../people.js";
+import type * as prestige from "../prestige.js";
 import type * as seed from "../seed.js";
 
 import type {
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   parse: typeof parse;
   people: typeof people;
+  prestige: typeof prestige;
   seed: typeof seed;
 }>;
 

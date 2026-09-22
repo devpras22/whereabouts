@@ -179,7 +179,7 @@ function HolidayImport() {
   };
   return (
     <span className="holimport">
-      <button className="linkbtn" onClick={() => setOpen((o) => !o)}>+ import via firecrawl</button>
+      <button className="linkbtn" title="Pulls that country's real public holidays from timeanddate.com (1 credit)" onClick={() => setOpen((o) => !o)}>+ add a country's holidays</button>
       {open && (
         <>
           <div className="cal-overlay" onClick={() => setOpen(false)} />
@@ -652,7 +652,7 @@ export default function Board({ onHome, onSignOut }: { onHome: () => void; onSig
             <span className="stat"><b className="ok">{aroundNow} of {board.cards.length} around</b> · <b className="warn">{offToday} off today</b></span>
           )}
           <ThemeToggle onToggle={toggleThemeSafe} />
-          <button className="btn small" onClick={sendDigest}>Send digest</button>
+          <button className="btn small" title="Previews the email Heidi sends you every morning at 8am your time" onClick={sendDigest}>Preview my morning email</button>
           <button className="btn small" onClick={onSignOut}>Sign out</button>
           {digestMsg && <span className="flash">{digestMsg}</span>}
         </div>

@@ -66,6 +66,7 @@ export function TeamSetup({ onDone }: { onDone: () => void }) {
 export function AddTeammate() {
   const addTeammate = useAddTeammate();
   const [name, setName] = useState("");
+  const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [place, setPlace] = useState<Place | null>(null);
   const [ws, setWs] = useState("9");
@@ -79,6 +80,7 @@ export function AddTeammate() {
     try {
       await addTeammate({
         name: name.trim(),
+        role: role.trim() || undefined,
         email: email.trim(),
         city: place?.city,
         tz: place?.tz ?? "Asia/Kolkata",
@@ -89,7 +91,7 @@ export function AddTeammate() {
         workEnd: num(we, 18),
       });
       setMsg(`Added ${name.trim()}. Heidi just emailed their invite.`);
-      setName(""); setEmail(""); setPlace(null);
+      setName(""); setRole(""); setEmail(""); setPlace(null);
     } catch (e) {
       setMsg(String(e).slice(0, 120));
     } finally {
@@ -105,6 +107,7 @@ export function AddTeammate() {
       </div>
       <div className="pastebox-row">
         <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input placeholder="Role (CTO, Design…)" value={role} onChange={(e) => setRole(e.target.value)} />
         <input placeholder="their@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
         <GeocodeBox label="city" onPick={setPlace} />
         <span className="till">

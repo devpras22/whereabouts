@@ -24,24 +24,23 @@ async function agentmail(path: string, body: unknown, method = "POST") {
 // --- emails Heidi sends -------------------------------------------------
 
 export const sendInvite = internalAction({
-  args: { to: v.string(), name: v.string(), teamName: v.string() },
-  handler: async (ctx, { to, name, teamName }) => {
+  args: { to: v.string(), name: v.string(), teamName: v.string(), inviter: v.optional(v.string()), teamId: v.optional(v.id("teams")) },
+  handler: async (ctx, { to, name, teamName, inviter, teamId }) => {
     const limit = await limiter.limit(ctx, "heidiSend", { key: "global" });
     if (!limit.ok) throw new ConvexError("Heidi is sending too fast — try again shortly");
-    const site = "https://perceptive-falcon-524.convex.site";
+    const join = `https://perceptive-falcon-524.convex.site/#/join?team=${teamId ?? ""}&email=${encodeURIComponent(to)}`;
     const text =
       `Hi ${name},\n\n` +
-      `You've been added to your team's Whereabouts board — a live view of who's around, ` +
-      `so nobody pings you at 3am by accident.\n\n` +
-      `Sign in here: ${site}\n` +
-      `Use this email (${to}) and any password of 8+ characters — first sign-in creates your account ` +
-      `and links you to your card on ${teamName}'s board.\n\n` +
+      `${inviter} just added you to the ${teamName} board — your team's live view of who's around, ` +
+      `so nobody pings anyone at 3am by accident.\n\n` +
+      `Join the team here: ${join}\n` +
+      `Set any password of 8+ characters with this email (${to}) and your card goes live.\n\n` +
       `Every weekday morning I'll send you one digest: who's around, who's off, whose local holiday it is.\n` +
       `And you can just reply to any of my emails — "off friday, family thing" — and I'll update the board for you.\n\n` +
-      `— Heidi, your team's HR inbox\n`;
+      `— Heidi, the AI who runs HR at ${teamName}\n`;
     await agentmail(`/inboxes/${env.AGENTMAIL_INBOX_ID}/messages/send`, {
       to,
-      subject: `You're on the ${teamName} board`,
+      subject: `You're invited to join ${teamName}`,
       text,
     });
     return "invited";

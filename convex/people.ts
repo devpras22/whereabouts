@@ -1,7 +1,7 @@
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { internal } from "./_generated/api";
+import { internal, api } from "./_generated/api";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -96,9 +96,16 @@ export const listBoard = query({
     });
 
     const teamRegions = [...new Set(scoped.map((p) => p.region))];
+    const seenHols = new Set<string>();
     const globalUpcoming = holidays
       .filter((h) => teamRegions.some((r) => h.region === r || h.region === r.slice(0, 2)) && h.date >= today && h.date <= addDaysISO(today, 14))
       .sort((a, b) => a.date.localeCompare(b.date))
+      .filter((h) => {
+        const k = `${h.region.slice(0, 2)}|${h.date}`;
+        if (seenHols.has(k)) return false;
+        seenHols.add(k);
+        return true;
+      })
       .map((h) => ({ region: h.region, name: h.name, date: h.date }));
 
     return { cards, upcoming: globalUpcoming, today, teamName: team?.name ?? "Demo team", viewerHasTeam: caller?.teamId != null };
@@ -199,11 +206,21 @@ export const addTeammate = mutation({
       workStart: args.workStart ?? 9,
       workEnd: args.workEnd ?? 18,
     });
+    // New country on the team? Firecrawl pulls its holidays in the background.
+    const cc = (args.region ?? "").split("-")[0].toUpperCase();
+    const known = cc
+      ? (await ctx.db.query("holidays").withIndex("by_region", (q: any) => q.eq("region", cc)).first()) != null
+      : false;
+    if (cc && !known) {
+      await ctx.scheduler.runAfter(0, api.holidays.importRegion, { region: cc });
+    }
     // Heidi sends the invite after the write commits.
     await ctx.scheduler.runAfter(0, internal.heidi.sendInvite, {
       to: args.email,
       name: args.name,
       teamName: team?.name ?? "your team's",
+      inviter: person.name,
+      teamId: person.teamId,
     });
     return id;
   },
@@ -340,7 +357,8 @@ export const purgeTeams = mutation({
   handler: async (ctx) => {
     let people = 0, statuses = 0, teams = 0;
     for await (const p of ctx.db.query("people")) {
-      if (!p.teamId) continue;
+      const isTest = !p.teamId && (p.email ?? "").endsWith("@hellogoddo.com");
+      if (!p.teamId && !isTest) continue;
       for await (const s of ctx.db.query("statuses").withIndex("by_person", (q: any) => q.eq("personId", p._id))) {
         await ctx.db.delete(s._id); statuses++;
       }
@@ -348,5 +366,32 @@ export const purgeTeams = mutation({
     }
     for await (const t of ctx.db.query("teams")) { await ctx.db.delete(t._id); teams++; }
     return { people, statuses, teams };
+  },
+});
+
+// Remove test auth users so invite links land on a clean first-time signup.
+export const purgeTestUsers = mutation({
+  args: {},
+  handler: async (ctx) => {
+    let users = 0;
+    for await (const u of ctx.db.query("users") as any) {
+      const email = (u.email ?? "") as string;
+      if (email.endsWith("@agentmail.to") || email.endsWith("@hellogoddo.com")) {
+        await ctx.db.delete(u._id);
+        users++;
+      }
+    }
+    return { users };
+  },
+});
+
+
+export const teamInfo = query({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, { teamId }) => {
+    const team = await ctx.db.get(teamId);
+    if (!team) return null;
+    const members = await ctx.db.query("people").withIndex("by_team", (q: any) => q.eq("teamId", teamId)).collect();
+    return { name: team.name, count: members.length };
   },
 });

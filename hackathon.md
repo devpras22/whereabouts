@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth (password)
 - **AI models:** gpt-4o-mini
 - **Started:** 2026-09-21T15:41:03Z
-- **Last updated:** 2026-09-21T18:00:00Z
+- **Last updated:** 2026-09-22T09:50:00Z
 
 ## Log
 
@@ -108,3 +108,15 @@ calendar replaces the native date picker and the away-date bug is gone;
 Atlas view (dot-matrix world map with real day/night terminator) and a 24-hour
 ribbon view, swipeable; viewer card gets a green ring; OG image and mobile
 styles. Fixed a TopoJSON delta-decoding bug that had garbled the map.
+
+### 2026-09-22 - working tree
+Demo company seed (Prestige Worldwide: CEO plus four employees across five
+continents, pre-set statuses and shifts), a personalized Heidi invite that
+deep-links to a join page ("You've been invited to join Prestige Worldwide"),
+a role field on teammate invites, geocoded city autocomplete replacing every
+hardcoded timezone list, exact Atlas pins from stored coordinates, two-pass
+label placement that avoids pins, calendar range booking with hover preview,
+local dates under each wall clock, holiday dedupe, and organic Firecrawl:
+adding a teammate from a new country auto-imports that country's holidays
+(`convex/prestige.ts`, `src/pages/Join.tsx`, `convex/holidays.ts`,
+`convex/people.ts`, `src/components/GeocodeBox.tsx`, `src/components/WorldMap.tsx`).

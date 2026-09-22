@@ -3,10 +3,15 @@ import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import Landing from "./pages/Landing";
 import Board from "./pages/Board";
 import SignIn from "./pages/SignIn";
+import Join from "./pages/Join";
 import { initTheme } from "./lib/data";
 
 export default function App() {
-  const [route, setRoute] = useState(window.location.hash === "#/board" ? "board" : "home");
+  const [route, setRoute] = useState(
+    window.location.hash.startsWith("#/join") ? "join"
+      : window.location.hash === "#/board" ? "board"
+      : "home",
+  );
   const { isAuthenticated, isLoading } = useConvexAuth();
   const authActions = useAuthActions();
 
@@ -15,7 +20,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const onHash = () => setRoute(window.location.hash === "#/board" ? "board" : "home");
+    const onHash = () =>
+      setRoute(
+        window.location.hash.startsWith("#/join") ? "join"
+          : window.location.hash === "#/board" ? "board"
+          : "home",
+      );
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -29,6 +39,10 @@ export default function App() {
     await authActions.signOut();
     go("home");
   };
+
+  if (route === "join") {
+    return <Join onDone={() => go("board")} />;
+  }
 
   if (route === "board" && !isAuthenticated) {
     if (isLoading) {

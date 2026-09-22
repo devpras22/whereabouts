@@ -565,3 +565,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
 .cal-day.sel { background: var(--text-display); color: var(--black); }
 .cal-day.in-range { background: rgba(74, 158, 92, 0.22); }
 .cal-day.end-preview { outline: 1.5px dashed var(--success); outline-offset: -1.5px; }
+
+.join-card { margin: 24px 0 14px; max-width: 560px; }
+.join-card input[readonly] { color: var(--text-secondary); }
